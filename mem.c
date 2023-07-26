@@ -41,7 +41,7 @@ void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size)
  *_memset - fills memory with a constant byte
  *
  *@s: memory where is stored
- *@b: memory where is copied
+ *@byt: memory where is copied
  *@n: number of bytes
  *Return: copied memory with n byted changed
  */
@@ -57,10 +57,10 @@ char *_memset(char *s, char byt, unsigned int n)
 }
 
 /**
- * free_data - frees data
+ * _data - frees data
  * @data: the data structure
  *
- * Return: (Success) positive number
+ * Return: 1if success
  * ------- (Fail) negative number
  */
 int _data(sh_t *data)

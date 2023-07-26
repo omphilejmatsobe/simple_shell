@@ -2,7 +2,7 @@
 
 #define SETOWD(V) (V = _strdup(_getenv("OLDPWD")))
 /**
- * change_dir - changes directory
+ * _dir - changes directory
  * @data: a pointer to the data structure
  *
  * Return: (Success) 0 is returned
@@ -72,7 +72,7 @@ int abort_prg(sh_t *data __attribute__((unused)))
 	exit(code);
 }
 /**
- * display_help - display the help menu
+ * _help - display the help menu
  * @data: a pointer to the data structure
  *
  * Return: (Success) 0 is returned

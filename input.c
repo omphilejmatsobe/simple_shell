@@ -45,7 +45,7 @@ int read_line(sh_t *input)
 
 #define DELIMITER " \n\t\r\a\v"
 /**
- * split_line - splits line to tokens
+ * split - splits line to tokens
  * @input: a pointer to the struct of data
  *
  * Return: 1 if success
@@ -89,7 +89,7 @@ int split(sh_t *input)
 
 #define DELIMITER ":"
 /**
- * parse_line - parses arguments to valid command
+ * line_parser - parses arguments to valid command
  * @input: a pointer to the struct of data
  *
  * Return: 1 if success,
@@ -109,7 +109,7 @@ int line_parser(sh_t *input)
 }
 #undef DELIMITER
 /**
- * process_cmd - process command and execute process
+ * process - process command and execute process
  * @input: a pointer to the struct of data
  *
  * Return: (Success) a positive number

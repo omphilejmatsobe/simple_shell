@@ -2,7 +2,7 @@
 
 /**
  * _handler - handle the process interrept signal
- * @signo: the signal identifier
+ * @signal: the signal identifier
  *
  * Return: void
  */
