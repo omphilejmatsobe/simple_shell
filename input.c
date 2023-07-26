@@ -1,82 +1,135 @@
 #include "simple_shell.h"
+
 /**
  * read_line - read a line from the standard input
- * @data: a pointer to the struct of data
+ * @input: a pointer to the struct of data
  *
- * Return: (Success) a positive number
- * ------- (Fail) a negative number
+ * Return: 1 if success
  */
-int read_line(sh_t *data)
+int read_line(sh_t *input)
 {
-	char *csr_ptr, *end_ptr, c;
-	size_t size = BUFSIZE, read_st, length, new_size;
+	char *csr, *end, c;
+	size_t size = BUFFSIZE;
+	size_t read_st, len, new_size;
 
-	data->line = malloc(size * sizeof(char));
-	if (data->line == NULL)
-		return (FAIL);
+	input->line = malloc(size * sizeof(char));
+	if (input->line == NULL)
+		return (-1);
 	if (isatty(STDIN_FILENO))
 		PRINT(PROMPT);
-	for (csr_ptr = data->line, end_ptr = data->line + size;;)
+	for (csr = input->line, end = input->line + size;;)
 	{
 		read_st = read(STDIN_FILENO, &c, 1);
 		if (read_st == 0)
-			return (FAIL);
-		*csr_ptr++ = c;
+			return (-1);
+		*csr++ = c;
 		if (c == '\n')
 		{
-			*csr_ptr = '\0';
-			return (SUCCESS);
+			*csr = '\0';
+			return (1);
 		}
-		if (csr_ptr + 2 >= end_ptr)
+		if (csr + 2 >= end)
 		{
 			new_size = size * 2;
-			length = csr_ptr - data->line;
-			data->line = _realloc(data->line, size * sizeof(char),
+			len = csr - input->line;
+			input->line = _realloc(input->line, size * sizeof(char),
 						new_size * sizeof(char));
-			if (data->line == NULL)
-				return (FAIL);
+			if (input->line == NULL)
+				return (-1);
 			size = new_size;
-			end_ptr = data->line + size;
-			csr_ptr = data->line + length;
+			end = input->line + size;
+			csr = input->line + len;
 		}
 	}
 }
+
 #define DELIMITER " \n\t\r\a\v"
 /**
  * split_line - splits line to tokens
- * @data: a pointer to the struct of data
+ * @input: a pointer to the struct of data
  *
- * Return: (Success) a positive number
- * ------- (Fail) a negative number
+ * Return: 1 if success
  */
-int split_line(sh_t *data)
+int split(sh_t *input)
 {
 	char *token;
-	size_t size = TOKENSIZE, new_size, i = 0;
+	size_t size = TOKENSIZE, new_size, x;
 
-	if (_strcmp(data->line, "\n") == 0)
-		return (FAIL);
-	data->args = malloc(size * sizeof(char *));
-	if (data->args == NULL)
-		return (FAIL);
-	token = strtok(data->line, DELIMITER);
+	x = 0;
+
+	if (_strcmp(input->line, "\n") == 0)
+		return (-1);
+
+	input->args = malloc(size * sizeof(char *));
+	if (input->args == NULL)
+		return (-1);
+
+	token = strtok(input->line, DELIMITER);
 	if (token == NULL)
-		return (FAIL);
+		return (-1);
 	while (token)
 	{
-		data->args[i++] =  token;
-		if (i + 2 >= size)
+		input->args[x++] =  token;
+		if (x + 2 >= size)
 		{
 			new_size = size * 2;
-			data->args = _realloc(data->args, size * sizeof(char *),
+			input->args = _realloc(input->args, size * sizeof(char *),
 					new_size * sizeof(char *));
-			if (data->args == NULL)
-				return (FAIL);
+
+			if (input->args == NULL)
+				return (-1);
 			size = new_size;
 		}
 		token = strtok(NULL, DELIMITER);
 	}
-	data->args[i] = NULL;
+	input->args[x] = NULL;
 	return (0);
 }
 #undef DELIMITER
+
+#define DELIMITER ":"
+/**
+ * parse_line - parses arguments to valid command
+ * @input: a pointer to the struct of data
+ *
+ * Return: 1 if success,
+ */
+int line_parser(sh_t *input)
+{
+	if (is_path_form(input) > 0)
+		return (1);
+	if (is_builtin(input) > 0)
+	{
+		if (handle_builtin(input) < 0)
+			return (-1);
+		return (0);
+	}
+	is_short_form(input);
+	return (1);
+}
+#undef DELIMITER
+/**
+ * process_cmd - process command and execute process
+ * @input: a pointer to the struct of data
+ *
+ * Return: (Success) a positive number
+ */
+int process(sh_t *input)
+{
+	pid_t pid;
+	int stat;
+
+	pid = fork();
+	if (pid == 0)
+	{
+		signal(SIGINT, SIG_DFL);
+		if (execve(input->cmd, input->args, environ) < 0)
+		input->error_msg = _strdup("not found\n");
+			return (-1);
+	}
+	else
+	{
+		waitpid(pid, &stat, WUNTRACED);
+	}
+	return (0);
+}
